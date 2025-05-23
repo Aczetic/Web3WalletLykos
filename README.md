@@ -18,14 +18,14 @@ The initial idea was pretty simple that is to simply fetch some wallet data like
 - **Kept Things in Sync**  
   Notifications weren’t in sync with app state because the function were holding stale states, so I had to **memoize** a bunch of stuff and manage when things updated so notifications showed up at the right time but still it is not polished.
 
-- **TypeScript **  
+- **TypeScript**  
   Thought I could get away with ignoring some types (like `ethereum`, `refs`, etc.), but I had eventually go set up the types which was very annoying and time taking. But Ended up learning a lot , though I took help from GPT , stackoverflow as well.
 
 - **ENS + DAI Support**  
   I wanted to show extra info like the ENS name and DAI balance. I asked GPT for help and used `ethers.js` because I didn't wanted to waste time as in the first try of just getting the balance and address.  
   Started with v5 docs and faced lots of errors then took gpt's help and switching to **ethers v6** fixed it.
 
-- **State Management **  
+- **State Management**  
   Thought about using a `reducer`, and even looked into full context-based state management — but ran out of time. Ended up just using React Context to pass wallet info around. Might not be perfect, but it works for now also I could not get my head round the need for context what's the big picture over here so just passed **walletInfo** state.
 
 - **React Hooks & Debugging**  
