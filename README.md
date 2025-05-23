@@ -2,7 +2,7 @@
 
 The initial idea was pretty simple that is to simply fetch some wallet data like the user's address, balance, ENS name, and DAI token balance, and display it. But in the process (and maybe trying to do a bit too much), I ended up building a **modular notification system** to handle different blockchain events.
 
-### 🛠 What I Did
+### 🛠 What I Did + Issues
 
 - **Built a Notification System**  
   Started with the basics, then decided to add a system to show notifications for things like:
