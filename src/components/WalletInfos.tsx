@@ -1,12 +1,12 @@
-import React, { useContext } from "react";
-
+import { useContext } from "react";
+import { Wallet } from "../App";
 import { WalletContext } from "../App";
 
 const WalletInfos = () => {
-  const walletInfo = useContext(WalletContext);
+  const walletInfo: Wallet[] = useContext(WalletContext) || [];
   return (
     <div className="w-full max-w-[600px] flex flex-col items-center justify-center gap-2">
-      {walletInfo?.map((each, index) => (
+      {walletInfo.map((each, index) => (
         <div
           key={index}
           className="w-full rounded-sm flex flex-col items-center gap-2 p-1 bg-blue-300"

@@ -1,4 +1,10 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef } from "react";
+import React, {
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useEffect,
+  useRef,
+} from "react";
 import ErrorIcon from "@mui/icons-material/Error";
 import SuccessIcon from "@mui/icons-material/CheckCircle";
 import InfoIcon from "@mui/icons-material/Info";
@@ -27,15 +33,15 @@ const Notification = React.memo(
     notType: NotificationType;
     setNotifications: Dispatch<SetStateAction<NotificationT[]>>;
   }) => {
-    const ref: { current: HTMLInputElement } = useRef();
+    const ref = useRef() as RefObject<HTMLDivElement>;
 
     useEffect(() => {
       const first = setTimeout(() => {
-        ref.current.classList.remove("translate-y-[-10rem]");
+        ref.current?.classList.remove("translate-y-[-10rem]");
       }, 400); // I have done this because this class will be removed  in the same tick as the rendering of original one so it gets prevented and reapplied
 
       const second = setTimeout(() => {
-        ref.current.classList.add("translate-y-[-10rem]");
+        ref.current?.classList.add("translate-y-[-10rem]");
       }, 3000);
 
       const third = setTimeout(() => {

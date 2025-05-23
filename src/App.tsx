@@ -12,12 +12,12 @@ export type Wallet = {
   address: string;
   ensName: string;
   dai: string;
-}[];
+};
 
-export const WalletContext = createContext(null);
+export const WalletContext = createContext<Wallet[]>([]);
 
 function App() {
-  const [walletInfo, setWalletInfo] = useState<Wallet>([]);
+  const [walletInfo, setWalletInfo] = useState<Wallet[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false); //TODO: set this so it sets automatically on the user preference misc
   const [notifications, setNotifications] = useState<NotificationT[]>([]);
   const [walletConnected, setWalletConnected] = useState<boolean | null>(null);
@@ -30,9 +30,9 @@ function App() {
     ]);
   };
 
-  const getWalletInfo: Promise<Wallet[]> = async (
+  const getWalletInfo: (
     provider: BrowserProvider
-  ) => {
+  ) => Promise<Wallet[]> = async (provider: BrowserProvider) => {
     const addresses = await provider.send("eth_requestAccounts", []);
 
     const DAI_ADDRESS = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
@@ -43,7 +43,7 @@ function App() {
       "function symbol() view returns (string)",
     ];
 
-    let accounts: Wallet[] = [];
+    const accounts: Wallet[] = [];
 
     for (let i = 0; i < addresses.length; i++) {
       //  dai fetching starts
@@ -64,7 +64,7 @@ function App() {
         accounts.push({
           balance: formatEther(await provider.getBalance(addresses[i])),
           address: addresses[i],
-          dai: formattedBalance || null,
+          dai: formattedBalance,
           ensName: ensName || addresses[i] + " ( No ENS assigned )",
         });
       } catch (e) {
@@ -97,9 +97,10 @@ function App() {
           });
         }
         const provider = new BrowserProvider(window.ethereum);
-        getWalletInfo(provider).then((accounts) =>
-          setWalletInfo([...accounts])
-        );
+
+        getWalletInfo(provider).then((accounts: Wallet[]): void => {
+          setWalletInfo([...accounts]);
+        });
       } catch (e) {
         notify({
           message: "some error occured",
@@ -145,6 +146,7 @@ function App() {
     notify({
       message: "The network information has changed",
       type: NotificationType.alert,
+      id: "",
     });
     connectWallet();
   };
@@ -153,6 +155,7 @@ function App() {
     notify({
       message: "A transaction has taken place",
       type: NotificationType.alert,
+      id: "",
     });
     connectWallet();
   };
