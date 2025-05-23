@@ -26,15 +26,13 @@ const Notification = React.memo(
     const ref: { current: HTMLInputElement } = useRef();
 
     useEffect(() => {
-      console.log(ref.current.classList);
-
       setTimeout(() => {
         ref.current.classList.remove("translate-y-[-10rem]");
       }, 100); // I have done this because this class will be removed  in the same tick as the rendering of original one so it gets prevented and reapplied
 
       setTimeout(() => {
         ref.current.classList.add("translate-y-[-10rem]");
-      }, 2000);
+      }, 4000);
 
       setTimeout(() => {
         // this removes the notifications when they are done displaying themselves
