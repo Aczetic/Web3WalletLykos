@@ -132,7 +132,6 @@ function App() {
         });
       }, 1000);
     } else {
-      console.log(walletConnected);
       notify({
         message: "Accounts Information Changed",
         type: NotificationType.alert,
@@ -164,6 +163,7 @@ function App() {
       notify({
         message: "The meta mask extension is not installed",
         type: NotificationType.error,
+        id: "",
       });
     } else {
       window.ethereum.on("accountsChanged", updateAccountsInfo); // for accounts info changes
@@ -179,7 +179,6 @@ function App() {
   }, [walletInfo, walletConnected]); // here I am refreshing the event listeners because they might hold up old values of variables if not updated
 
   useEffect(() => {
-    console.log("the value of walletconnected is ", walletConnected);
     if (walletConnected == null) {
       setWalletConnected(() => {
         return window.localStorage.getItem("isWalletConnected") == "true"
