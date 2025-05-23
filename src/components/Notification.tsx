@@ -32,12 +32,12 @@ const Notification = React.memo(
 
       setTimeout(() => {
         ref.current.classList.add("translate-y-[-10rem]");
-      }, 4000);
+      }, 3000);
 
       setTimeout(() => {
         // this removes the notifications when they are done displaying themselves
         setNotifications((current: NotificationT[]) => [...current.slice(1)]);
-      }, 3000);
+      }, 3500);
     }, []);
 
     return (

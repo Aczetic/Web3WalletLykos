@@ -1,27 +1,42 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import NotificationParent from "./components/NotificationParent";
 import { NotificationT, NotificationType } from "./components/Notification";
 import { BrowserProvider, formatEther } from "ethers";
 import "./App.css";
+import WalletInfos from "./components/WalletInfos";
 
-type Wallet = {
-  balance: number;
+export type Wallet = {
+  balance: string;
   address: string;
 }[];
 
-const WalletContext = createContext(null);
+export const WalletContext = createContext(null);
 
 function App() {
   const [walletInfo, setWalletInfo] = useState<Wallet>([]);
   const [isDarkMode, setIsDarkMode] = useState(false); //TODO: set this so it sets automatically on the user preference misc
   const [notifications, setNotifications] = useState<NotificationT[]>([]);
+  const [walletConnected, setWalletConnected] = useState<boolean | null>(null);
 
   const notify = (notification: NotificationT) => {
     // I am putting up the state for notifications here as setting up constext/ pub-sub , etc is not the scope of the problem but still wanted to have a notification system
     setNotifications((current: NotificationT[]) => [...current, notification]);
   };
+
+  const getWalletInfo: Wallet[] = async (provider: BrowserProvider) => {
+    const addresses = await provider.send("eth_requestAccounts", []);
+    let accounts: Wallet[] = [];
+    for (let i = 0; i < addresses.length; i++) {
+      accounts.push({
+        balance: formatEther(await provider.getBalance(addresses[i])),
+        address: addresses[i],
+      });
+    }
+    return accounts;
+  };
+
   const connectWallet = async () => {
     if (!window.ethereum) {
       notify({
@@ -32,29 +47,53 @@ function App() {
     } else {
       try {
         const provider = new BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const address = await signer.getAddress();
-        const bal = await provider.getBalance(address);
-
-        console.log(address);
-        console.log(formatEther(bal));
+        getWalletInfo(provider).then((accounts) =>
+          setWalletInfo([...accounts])
+        );
       } catch (e) {
         notify({ message: "some error occured", type: NotificationType.error });
         console.error(e);
       }
     }
   };
-  const updateAccountsInfo = () =>
+
+  const updateAccountsInfo = (accounts: Wallet[]) => {
+    if (accounts.length === 0) {
+      notify({ message: "Wallet disconnected", type: NotificationType.alert });
+      setWalletConnected(false);
+      setWalletInfo([]);
+    } else if (walletConnected === false) {
+      connectWallet();
+      setWalletConnected(true);
+      notify({
+        message: "Wallet Connected Successfully",
+        type: NotificationType.success,
+      });
+    } else {
+      console.log(walletConnected);
+      notify({
+        message: "Accounts Information Changed",
+        type: NotificationType.alert,
+      });
+      connectWallet();
+    }
+  };
+
+  const networkChanged = () => {
     notify({
-      message: "update the accounts information",
+      message: "The network information has changed",
       type: NotificationType.alert,
     });
-  const updateBalance = () =>
+    connectWallet();
+  };
+
+  const updateBalance = () => {
     notify({
-      message:
-        "the chain id has changed which means some transaction has happened",
+      message: "A transaction has taken place",
       type: NotificationType.alert,
     });
+    connectWallet();
+  };
 
   useEffect(() => {
     // this effect will fetch wallet infor on every launch
@@ -64,19 +103,37 @@ function App() {
         type: NotificationType.error,
       });
     } else {
-      window.ethereum.on("accountsChanged", updateAccountsInfo);
-
-      window.ethereum.on("chainChanged", updateBalance);
+      window.ethereum.on("accountsChanged", updateAccountsInfo); // for accounts info changes
+      window.ethereum.on("block", updateBalance); // this I searched and found this event is emitted on transactions not tested
+      window.ethereum.on("chainChanged", networkChanged); // for network changed
     }
     return () => {
+      //cleanup
       window.ethereum.off("accountsChanged", updateAccountsInfo);
-      window.ethereum.off("chainChanged", updateBalance);
+      window.ethereum.off("chainChanged", networkChanged);
+      window.ethereum.on("block", updateBalance);
     };
-  }, []);
+  }, [walletInfo, walletConnected]); // here I am refreshing the event listeners because they might hold up old values of variables if not updated
+
+  useEffect(() => {
+    console.log("the value of walletconnected is ", walletConnected);
+    if (walletConnected == null) {
+      setWalletConnected(() => {
+        return window.localStorage.getItem("isWalletConnected") == "true"
+          ? true
+          : false;
+      });
+    } else {
+      window.localStorage.setItem(
+        "isWalletConnected",
+        JSON.stringify(walletConnected)
+      );
+    }
+  }, [walletConnected]);
 
   return (
     <>
-      <WalletContext.Provider value={null}>
+      <WalletContext.Provider value={walletInfo}>
         <div className="parent bg-white dark:bg-zinc-800 w-full box-border h-[100vh] flex flex-col items-center justify-center relative px-4">
           {
             <NotificationParent
@@ -97,18 +154,22 @@ function App() {
               <DarkModeIcon className="text-zinc-800" />
             )}
           </div>
+          {walletInfo.length > 0 && (
+            <div className="text-2xl text-blue-950 font-bold dark:text-blue-200">
+              Wallets Information
+            </div>
+          )}
           {walletInfo.length > 0 ? (
-            "Wallet info"
+            <WalletInfos />
           ) : (
             <div
               onClick={connectWallet}
               className="bg-blue-800 text-blue-100  px-3 py-1 rounded-sm active:scale-[0.99] duration-100 select-none cursor-pointer"
             >
-              Connect Wallet
+              {walletConnected == false ? "Connect Wallet" : "Show Wallets"}
               {/* TODO:show the button only when the wallet info is not present or when the wallet is not connected */}
             </div>
           )}
-          <div></div>
         </div>
       </WalletContext.Provider>
     </>
