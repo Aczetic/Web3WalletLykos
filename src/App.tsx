@@ -3,13 +3,15 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import NotificationParent from "./components/NotificationParent";
 import { NotificationT, NotificationType } from "./components/Notification";
-import { BrowserProvider, formatEther } from "ethers";
+import { BrowserProvider, formatEther, ethers } from "ethers";
 import "./App.css";
 import WalletInfos from "./components/WalletInfos";
 
 export type Wallet = {
   balance: string;
   address: string;
+  ensName: string;
+  dai: string;
 }[];
 
 export const WalletContext = createContext(null);
@@ -25,13 +27,41 @@ function App() {
     setNotifications((current: NotificationT[]) => [...current, notification]);
   };
 
-  const getWalletInfo: Wallet[] = async (provider: BrowserProvider) => {
+  const getWalletInfo: Promise<Wallet[]> = async (
+    provider: BrowserProvider
+  ) => {
     const addresses = await provider.send("eth_requestAccounts", []);
+
+    const DAI_ADDRESS = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
+
+    const ERC20_ABI = [
+      "function balanceOf(address owner) view returns (uint256)",
+      "function decimals() view returns (uint8)",
+      "function symbol() view returns (string)",
+    ];
+
     let accounts: Wallet[] = [];
+
     for (let i = 0; i < addresses.length; i++) {
+      //  dai fetching starts
+      const ensName = await provider.lookupAddress(addresses[i]);
+
+      const dai = new ethers.Contract(DAI_ADDRESS, ERC20_ABI, provider);
+      const [balance, decimals, symbol] = await Promise.all([
+        dai.balanceOf(addresses[i]),
+        dai.decimals(),
+        dai.symbol(),
+      ]);
+
+      const formattedBalance =
+        ethers.formatUnits(balance, decimals) + " " + symbol;
+
+      // Daifetching over
       accounts.push({
         balance: formatEther(await provider.getBalance(addresses[i])),
         address: addresses[i],
+        dai: formattedBalance,
+        ensName: ensName,
       });
     }
     return accounts;
