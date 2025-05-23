@@ -9,7 +9,11 @@ enum NotificationType {
   alert = "alert",
 }
 
-export type NotificationT = { message: string; type: NotificationType };
+export type NotificationT = {
+  message: string;
+  type: NotificationType;
+  id: string;
+};
 
 export { NotificationType };
 
@@ -26,19 +30,22 @@ const Notification = React.memo(
     const ref: { current: HTMLInputElement } = useRef();
 
     useEffect(() => {
-      setTimeout(() => {
+      const first = setTimeout(() => {
         ref.current.classList.remove("translate-y-[-10rem]");
-      }, 100); // I have done this because this class will be removed  in the same tick as the rendering of original one so it gets prevented and reapplied
+      }, 400); // I have done this because this class will be removed  in the same tick as the rendering of original one so it gets prevented and reapplied
 
-      setTimeout(() => {
+      const second = setTimeout(() => {
         ref.current.classList.add("translate-y-[-10rem]");
       }, 3000);
 
-      setTimeout(() => {
+      const third = setTimeout(() => {
         // this removes the notifications when they are done displaying themselves
         setNotifications((current: NotificationT[]) => [...current.slice(1)]);
-      }, 3500);
-    }, []);
+      }, 4000);
+      return () => {
+        clearTimeout(first), clearTimeout(second), clearTimeout(third);
+      };
+    }, [ref]);
 
     return (
       <div

@@ -10,9 +10,9 @@ const NotificationParent = ({
 }) => {
   return (
     <div className="w-full bg-red-800 absolute top-0 flex justify-center">
-      {notifications.map((each, index) => (
+      {notifications.map((each) => (
         <Notification
-          key={index}
+          key={each.id}
           message={each.message}
           notType={each.type}
           setNotifications={setNotifications}
