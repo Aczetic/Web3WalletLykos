@@ -27,8 +27,8 @@ const WalletInfos = () => {
               <span className="font-bold min-w-18">DAI:</span>
               {each.dai}
             </div>
-            <div className="text-blue-800 flex gap-1">
-              <span className="font-bold min-w-18">ENS Name:</span>
+            <div className="text-blue-800 flex gap-1 break-all ">
+              <span className="font-bold min-w-22">ENS Name:</span>
               {each.ensName}
             </div>
           </div>
