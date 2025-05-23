@@ -174,10 +174,12 @@ function App() {
       window.ethereum.on("chainChanged", networkChanged); // for network changed
     }
     return () => {
-      //cleanup
-      window.ethereum.off("accountsChanged", updateAccountsInfo);
-      window.ethereum.off("chainChanged", networkChanged);
-      window.ethereum.on("block", updateBalance);
+      if (window.ethereum) {
+        //cleanup only when the metamask is present
+        window.ethereum.off("accountsChanged", updateAccountsInfo);
+        window.ethereum.off("chainChanged", networkChanged);
+        window.ethereum.off("block", updateBalance);
+      }
     };
   }, [walletInfo, walletConnected]); // here I am refreshing the event listeners because they might hold up old values of variables if not updated
 
